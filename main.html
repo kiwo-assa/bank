@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Banco - Página Principal</title>
+    <!-- Incluir Chart.js desde un CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Reset de estilos básicos */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Estilo general */
+        body {
+            background-color: #f3f4f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px; /* Espacio para la barra inferior */
+            min-height: 100vh;
+        }
+
+        /* Encabezado con clave dinámica */
+        .header {
+            background-color: #333;
+            color: white;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .dynamic-key-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .dynamic-key-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .timer-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #fff;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid #ddd;
+            border-top-color: #4CAF50;
+            animation: countdown 30s linear infinite;
+        }
+
+        .timer-circle::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lock-icon {
+            position: absolute;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .dynamic-key-number {
+            position: absolute;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @keyframes countdown {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Contenedor de cuenta */
+        .account-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .account-info, .additional-info {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .account-info h2, .additional-info h2 {
+            color: #4CAF50;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .account-info p, .additional-info p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        /* Estilo para el saldo más grande */
+        #accountBalance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 10px;
+        }
+
+        .account-number {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .action-buttons button {
+            flex: 1 1 calc(45% - 10px);
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .action-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Menú de navegación fijo en la parte inferior */
+        .bottom-nav {
+            width: 100%;
+            background-color: #f1f1f1;
+            position: fixed;
+            bottom: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
+        }
+
+        .bottom-nav button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #555;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .bottom-nav button.active {
+            color: #007BFF;
+        }
+        
+        .icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* Botón de cerrar sesión */
+        .logout-button {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 90%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover {
+            color: #000;
+        }
+
+        /* Estilos para el formulario de transferencia */
+        .transfer-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .transfer-form input, .transfer-form select, .transfer-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .transfer-form button {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .transfer-form button:hover {
+            background-color: #218838;
+        }
+
+        /* Estilos para gráficos */
+        .chart-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Estilo para el símbolo de hielo */
+        .ice-symbol {
+            font-size: 24px;
+            color: #00BFFF;
+            margin-left: 10px;
+        }
+
+        /* Estilo para la imagen debajo del contenedor */
+        .bottom-image {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .bottom-image img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos para el botón de atención al cliente pequeño y fijo */
+        .fixed-customer-service-button {
+            position: fixed;
+            bottom: 80px; /* Ajusta según sea necesario */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #555;
+            z-index: 1000;
+        }
+
+        .fixed-customer-service-button img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .fixed-customer-service-button span {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        /* Estilos para el ícono de WhatsApp */
+        .whatsapp-icon {
+            background-color: #25D366;
+            border-radius: 50%;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .whatsapp-icon:hover {
+            background-color: #1DA851;
+        }
+
+        /* Media Queries para pantallas pequeñas */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .dynamic-key-title {
+                font-size: 12px;
+            }
+
+            .dynamic-key-number {
+                font-size: 18px;
+            }
+
+            .account-info h2, .additional-info h2 {
+                font-size: 16px;
+            }
+
+            #accountBalance {
+                font-size: 20px;
+            }
+
+            .action-buttons button {
+                flex: 1 1 calc(100% - 10px);
+            }
+
+            .icon {
+                font-size: 18px;
+            }
+
+            .bottom-nav button {
+                font-size: 14px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado -->
+    <div class="header">
+        <h1 id="userGreeting">Hola, Usuario</h1>
+        <div class="dynamic-key-container">
+            <div class="dynamic-key-title">Clave Dinámica</div>
+            <div class="timer-circle" id="timerCircle">
+                <i class="lock-icon">🔒</i>
+                <div class="dynamic-key-number" id="dynamicKey">000 000</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de cerrar sesión -->
+    <button class="logout-button" onclick="logout()">Cerrar Sesión</button>
+
+    <!-- Contenedor de Cuenta -->
+    <div class="account-container">
+        <div class="account-info">
+            <h2>Cuenta Ahorros</h2>
+            <!-- Saldo más grande -->
+            <p id="accountBalance">Saldo disponible: </p>
+            <!-- Número de cuenta debajo del saldo -->
+            <p class="account-number" id="accountNumber">Número de Cuenta: </p>
+        </div>
+        
+        <div class="action-buttons">
+            <button onclick="showBalance()">Ver Saldos</button>
+            <button onclick="transferMoney()">Transferir Dinero</button>
+            <button onclick="withdrawMoney()">Retirar Dinero</button>
+            <button onclick="openChartModal()">Pagar Créditos</button>
+            <button onclick="openModal()">Conoce más de tu cuenta</button>
+        </div>
+    </div>
+
+    <!-- Contenedor de Información Adicional -->
+    <div class="account-container">
+        <div class="additional-info" id="additionalInfo">
+            <h2>Información Personal</h2>
+            <!-- La información se llenará dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Imagen debajo del contenedor de información personal -->
+    <div class="bottom-image">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Logo_Banco_de_España.jpg" alt="Imagen">
+    </div>
+
+    <!-- Botón de Atención al Cliente Pequeño y Fijo -->
+    <a href="https://wa.me/341234567890?text=Hola,%20necesito%20asistencia%20con%20mi%20cuenta" class="fixed-customer-service-button" target="_blank">
+        <div class="whatsapp-icon">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp Logo">
+        </div>
+        <span>Atención al Cliente</span>
+    </a>
+
+    <!-- Menú de Navegación Fijo en la Parte Inferior -->
+    <div class="bottom-nav">
+        <button class="active" onclick="showPage('inicio')">
+            <div class="icon">🏠</div>
+            Inicio
+        </button>
+        <button onclick="showPage('transacciones')">
+            <div class="icon">💳</div>
+            Transacciones
+        </button>
+        <button onclick="showPage('explorar')">
+            <div class="icon">📂</div>
+            Explorar
+        </button>
+        <button onclick="showPage('tramites')">
+            <div class="icon">📄</div>
+            Trámites
+        </button>
+        <button onclick="showPage('ajustes')">
+            <div class="icon">⚙️</div>
+            Ajustes
+        </button>
+    </div>
+
+    <!-- Modal para "Conoce más de tu cuenta" -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2>Detalles de tu cuenta</h2>
+            <p>Número de Cuenta: <strong id="modalAccountNumber"></strong></p>
+            <p>Tipo de Cuenta: <strong id="modalAccountType"></strong></p>
+            <p>Fecha de Apertura: <strong id="modalOpeningDate"></strong></p>
+            <p>Tasa de Interés: <strong id="modalInterestRate"></strong></p>
+        </div>
+    </div>
+
+    <!-- Modal para "Transferir Dinero" -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeTransferModal()">&times;</span>
+            <h2>Transferir Dinero</h2>
+            <form class="transfer-form" onsubmit="processTransfer(event)">
+                <label for="recipientName">Nombre del destinatario:</label>
+                <input type="text" id="recipientName" required placeholder="Ingrese el nombre completo">
+
+                <label for="transferAmount">Valor a transferir:</label>
+                <input type="number" id="transferAmount" required min="0.01" step="0.01" placeholder="Ingrese el monto en euros (€)">
+
+                <label for="bankDestination">Banco a transferir:</label>
+                <select id="bankDestination" required>
+                    <option value="">Seleccione un banco</option>
+                    <option value="santander">Banco Santander</option>
+                    <option value="bbva">BBVA</option>
+                    <option value="caixabank">CaixaBank</option>
+                    <option value="bankia">Bankia</option>
+                    <option value="sabadell">Banco Sabadell</option>
+                    <!-- Puedes agregar más bancos aquí -->
+                </select>
+
+                <label for="accountDestination">Número de cuenta destino:</label>
+                <input type="text" id="accountDestination" required placeholder="Ingrese el número de cuenta">
+
+                <label for="transferReason">Motivo:</label>
+                <textarea id="transferReason" rows="3" placeholder="Ingrese el motivo de la transferencia"></textarea>
+
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para "Ver Saldos" -->
+    <div id="balanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeBalanceModal()">&times;</span>
+            <h2>Saldos de tus Cuentas</h2>
+            <p>Cuenta Ahorros: <strong id="savingsBalance"></strong></p>
+            <p>Cuenta Corriente: <strong id="currentBalance"></strong></p>
+            <p>Tarjeta de Crédito: <strong id="creditCardBalance"></strong></p>
+        </div>
+    </div>
+
+    <!-- Modal para "Pagar Créditos" con Gráfico -->
+    <div id="chartModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeChartModal()">&times;</span>
+            <h2>Pagar Créditos</h2>
+            <p>A continuación se muestra el estado de tu deuda:</p>
+            <div class="chart-container">
+                <canvas id="debtChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts para manejar los modales y clave dinámica -->
+    <script>
+        // Obtener usuario logueado
+        const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+        if (!user || user.isAdmin) {
+            // Si no hay usuario o es admin, redirigir al inicio de sesión
+            window.location.href = 'index.html';
+        } else {
+            // Función para formatear números según la convención europea
+            function formatNumber(num) {
+                return num.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+            }
+
+            // Actualizar la información del usuario en la página
+            document.getElementById('userGreeting').textContent = 'Hola, ' + user.info.nombre;
+            document.getElementById('accountNumber').textContent = 'Número de Cuenta: ' + user.info.cuenta;
+            document.getElementById('accountBalance').innerHTML = 'Saldo disponible: ' + formatNumber(user.info.saldoAhorros) + ' <span class="ice-symbol">❄️</span>';
+            document.getElementById('modalAccountNumber').textContent = user.info.cuenta;
+            document.getElementById('modalAccountType').textContent = user.info.tipoCuenta || 'Cuenta Ahorros';
+            document.getElementById('modalOpeningDate').textContent = user.info.fechaApertura || 'N/A';
+            document.getElementById('modalInterestRate').textContent = user.info.tasaInteres !== undefined ? user.info.tasaInteres + '% EA' : '1.5% EA';
+
+            document.getElementById('savingsBalance').textContent = formatNumber(user.info.saldoAhorros);
+            document.getElementById('currentBalance').textContent = formatNumber(user.info.saldoCorriente);
+            document.getElementById('creditCardBalance').textContent = formatNumber(user.info.saldoTarjeta);
+
+            // Llenar información adicional
+            const additionalInfo = document.getElementById('additionalInfo');
+            additionalInfo.innerHTML = `
+                <h2>Información Personal</h2>
+                <p><strong>Dirección:</strong> ${user.info.direccion || 'N/A'}</p>
+                <p><strong>Correo:</strong> ${user.info.correo || 'N/A'}</p>
+                <p><strong>Tiempo de residencia:</strong> ${user.info.residencia || 'N/A'}</p>
+                <p><strong>Estado civil:</strong> ${user.info.estadoCivil || 'N/A'}</p>
+                <p><strong>Personas a cargo:</strong> ${user.info.personasCargo || 'N/A'}</p>
+                <p><strong>Trabajo actual:</strong> ${user.info.trabajo || 'N/A'}</p>
+                <p><strong>Salario mensual:</strong> ${user.info.salario !== null ? formatNumber(user.info.salario) : 'N/A'}</p>
+                <p><strong>Gastos mensuales:</strong> ${user.info.gastos !== null ? formatNumber(user.info.gastos) : 'N/A'}</p>
+                <p><strong>Deudas:</strong> ${user.info.deudas !== null ? formatNumber(user.info.deudas) : 'N/A'}</p>
+                <p><strong>Inversiones:</strong> ${user.info.inversiones !== null ? formatNumber(user.info.inversiones) : 'N/A'}</p>
+            `;
+        }
+
+        function logout() {
+            sessionStorage.removeItem('loggedInUser');
+            window.location.href = 'index.html';
+        }
+
+        function transferMoney() {
+            document.getElementById('transferModal').style.display = 'block';
+        }
+
+        function closeTransferModal() {
+            document.getElementById('transferModal').style.display = 'none';
+        }
+
+        function processTransfer(event) {
+            event.preventDefault();
+            const recipientName = document.getElementById('recipientName').value.trim();
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const bank = document.getElementById('bankDestination').value;
+            const accountNumber = document.getElementById('accountDestination').value.trim();
+            const reason = document.getElementById('transferReason').value.trim();
+
+            if (recipientName && bank && accountNumber && amount > 0) {
+                // Mostrar animación de carga
+                const transferButton = document.querySelector('.transfer-form button');
+                transferButton.disabled = true;
+                transferButton.textContent = 'Procesando...';
+
+                setTimeout(() => {
+                    alert('Esta cuenta se encuentra congelada, hasta que no realice los pagos pertinentes.');
+                    closeTransferModal();
+                    // Restaurar el botón
+                    transferButton.disabled = false;
+                    transferButton.textContent = 'Enviar';
+                }, 3000);
+            } else {
+                alert('Por favor, completa todos los campos correctamente.');
+            }
+        }
+
+        function showBalance() {
+            alert('Esta cuenta se encuentra congelada, hasta que no realice los pagos pertinentes.');
+        }
+
+        function closeBalanceModal() {
+            document.getElementById('balanceModal').style.display = 'none';
+        }
+
+        function openModal() {
+            alert('Esta cuenta se encuentra congelada, hasta que no realice los pagos pertinentes.');
+        }
+
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+        }
+
+        function openChartModal() {
+            document.getElementById('chartModal').style.display = 'block';
+            renderDebtChart();
+        }
+
+        function closeChartModal() {
+            document.getElementById('chartModal').style.display = 'none';
+        }
+
+        function withdrawMoney() {
+            alert('Esta opción estará disponible cuando se hayan realizado los pagos correspondientes.');
+        }
+
+        // Clave dinámica simulada
+        function generateDynamicKey() {
+            const dynamicKey = document.getElementById('dynamicKey');
+            const newKey = Math.floor(100000 + Math.random() * 900000);
+            dynamicKey.textContent = newKey.toString().replace(/(\d{3})(\d{3})/, '$1 $2');
+        }
+
+        // Generar una nueva clave dinámica cada 30 segundos
+        generateDynamicKey();
+        setInterval(generateDynamicKey, 30000);
+
+        // Simular temporizador circular
+        const timerCircle = document.getElementById('timerCircle');
+        let rotation = 0;
+        setInterval(() => {
+            rotation += 12; // 360 grados / 30 segundos = 12 grados por segundo
+            timerCircle.style.transform = `rotate(${rotation}deg)`;
+        }, 1000);
+
+        function showPage(page) {
+            if (page === 'inicio') {
+                // Navegar a la página de inicio
+                window.scrollTo(0, 0);
+            } else {
+                // Mostrar mensaje de cuenta congelada
+                alert('Esta cuenta se encuentra congelada, hasta que no realice los pagos pertinentes.');
+            }
+        }
+
+        // Cerrar el modal si se hace clic fuera de él
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Función para renderizar el gráfico de pastel de deuda
+        function renderDebtChart() {
+            const ctx = document.getElementById('debtChart').getContext('2d');
+
+            // Datos de deuda obtenidos del usuario
+            let deudaPagada = user.info.deudaPagada !== undefined ? user.info.deudaPagada : 3000;
+            let saldoPorPagar = user.info.saldoPorPagar !== undefined ? user.info.saldoPorPagar : 2000;
+
+            // Destruir gráfico existente si lo hay
+            if (window.debtChartInstance) {
+                window.debtChartInstance.destroy();
+            }
+
+            // Crear nuevo gráfico
+            window.debtChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Deuda Pagada', 'Saldo por Pagar'],
+                    datasets: [{
+                        data: [deudaPagada, saldoPorPagar],
+                        backgroundColor: ['#4CAF50', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+
+        // Implementar cierre de sesión después de 2 minutos de inactividad
+        let sessionTimeout;
+        resetSessionTimeout();
+
+        // Eventos que reinician el temporizador de inactividad
+        ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(function(event) {
+            document.addEventListener(event, resetSessionTimeout, false);
+        });
+
+        function resetSessionTimeout() {
+            clearTimeout(sessionTimeout);
+            sessionTimeout = setTimeout(function() {
+                alert('Sesión expirada por inactividad.');
+                logout();
+            }, 2 * 60 * 1000); // 2 minutos en milisegundos
+        }
+
+        // Cerrar sesión al cerrar la pestaña o navegador
+        window.addEventListener('beforeunload', function() {
+            sessionStorage.removeItem('loggedInUser');
+        });
+
+    </script>
+
+</body>
+</html>

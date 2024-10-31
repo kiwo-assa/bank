@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://e00-expansion.uecdn.es/assets/multimedia/imagenes/2018/07/30/15329600328670.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007BFF;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .register-link p {
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        .register-link a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Media Queries para pantallas pequeñas */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .login-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            input, button {
+                font-size: 16px;
+            }
+
+            button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h1>Iniciar Sesión</h1>
+        <form id="loginForm">
+            <label for="loginUsername">Nombre de Usuario</label>
+            <input type="text" id="loginUsername" required>
+
+            <label for="loginPassword">Contraseña</label>
+            <input type="password" id="loginPassword" required>
+
+            <button type="submit">Ingresar</button>
+        </form>
+
+        <!-- Formulario para el token (oculto por defecto) -->
+        <form id="tokenForm" style="display: none;">
+            <label for="loginToken">Ingrese el Token</label>
+            <input type="text" id="loginToken" required>
+
+            <button type="submit">Verificar Token</button>
+        </form>
+
+        <div class="register-link">
+            <p>¿No tienes una cuenta? Ponte en contacto con el administrador.</p>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar usuarios si no existen
+        if (!localStorage.getItem('users')) {
+            const defaultUsers = [
+                {
+                    username: 'superadmin',
+                    password: 'SuperPassword123!',
+                    isAdmin: true,
+                    email: 'seguridadtoken6@gmail.com' // Reemplaza con el correo real del superusuario
+                },
+                {
+                    username: 'usuario1',
+                    password: 'password1',
+                    isAdmin: false
+                },
+                // Puedes agregar más usuarios aquí
+            ];
+            localStorage.setItem('users', JSON.stringify(defaultUsers));
+        }
+
+        const loginForm = document.getElementById('loginForm');
+        const tokenForm = document.getElementById('tokenForm');
+
+        let currentUser = null;
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                if (user.isAdmin) {
+                    // Es superusuario, solicitar token
+                    currentUser = user;
+                    // Enviar solicitud al servidor para enviar el token
+                    fetch('/send-token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: user.email })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Se ha enviado un token a tu correo electrónico.');
+                            loginForm.style.display = 'none';
+                            tokenForm.style.display = 'block';
+                        } else {
+                            alert('Error al enviar el token. Intenta nuevamente.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al enviar el token. Intenta nuevamente.');
+                    });
+                } else {
+                    // Es usuario normal, iniciar sesión
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+                    window.location.href = 'main.html';
+                }
+            } else {
+                alert('Credenciales incorrectas. Por favor, intenta nuevamente.');
+            }
+        });
+
+        tokenForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const token = document.getElementById('loginToken').value.trim();
+
+            // Enviar solicitud al servidor para verificar el token
+            fetch('/verify-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Token válido, iniciar sesión
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('Token inválido o expirado. Intenta nuevamente.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al verificar el token. Intenta nuevamente.');
+            });
+        });
+    </script>
+
+</body>
+</html>
